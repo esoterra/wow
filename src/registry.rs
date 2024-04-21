@@ -34,11 +34,6 @@ impl Registry {
         Ok(Self { client })
     }
 
-    pub async fn update(&mut self) -> Result<()> {
-        self.client.update_all().await?;
-        Ok(())
-    }
-
     pub async fn ensure_downloaded(&mut self, tool: &Tool) -> Result<()> {
         let package = PackageName::new(tool.package.clone())?;
         let requirement = match &tool.version {

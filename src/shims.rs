@@ -54,7 +54,7 @@ impl Shims {
                 return Ok(());
             }
         }
-        println!("Add directory `~/.wow/shims` to your path.");
+        println!("Add directory `$HOME/.wow/shims` to your path.");
         Ok(())
     }
 }
