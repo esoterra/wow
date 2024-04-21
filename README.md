@@ -5,7 +5,7 @@ The workspace manager for development environments.
 ## Installing `wow`
 
 ```bash
-cargo install --git https://github.com/esoterra/wow
+cargo install --git https://github.com/esoterra/wow wow
 
 ```
 
