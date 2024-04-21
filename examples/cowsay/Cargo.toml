@@ -1,0 +1,17 @@
+[package]
+name = "cowsay"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.component]
+package = "wow:cowsay"
+
+[package.metadata.component.dependencies]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.component.registries]
+wow = "https://wow.wa.dev"
+
+[dependencies]
+wit-bindgen-rt = { version = "0.24.0", features = ["bitflags"] }
