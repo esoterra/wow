@@ -2,6 +2,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 
 use anyhow::{bail, Context, Result};
 use knuffel;
+use warg_protocol::VersionReq;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Config {
@@ -15,6 +16,16 @@ pub struct Tool {
     pub version: Option<String>,
 }
 
+impl Tool {
+    pub fn version_req(&self) -> Result<VersionReq> {
+        let req = match &self.version {
+            Some(version) => VersionReq::parse(&format!("={}", version))?,
+            None => VersionReq::STAR,
+        };
+        Ok(req)
+    }
+}
+
 impl Config {
     pub fn parse_file(path: PathBuf) -> Result<Self> {
         let text = fs::read_to_string(&path).context("Reading config file")?;
@@ -23,7 +34,8 @@ impl Config {
     }
 
     pub fn parse(file_name: &str, text: &str) -> Result<Self> {
-        let items = knuffel::parse::<Vec<KdlConfigItem>>(file_name, text).context("Parsing config file")?;
+        let items =
+            knuffel::parse::<Vec<KdlConfigItem>>(file_name, text).context("Parsing config file")?;
         let mut registry = None;
         let mut tools = HashMap::new();
         for item in items {

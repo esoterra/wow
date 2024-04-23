@@ -8,9 +8,16 @@ use wasmtime::{
 use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 use wasmtime_wasi::command::{Command, add_to_linker as add_command_to_linker};
 
-use crate::workspace::Workspace;
+use crate::{shims::Shims, workspace::Workspace};
 
-pub async fn run(mut workspace: Workspace, tool_name: String, args: Vec<String>) -> Result<()> {
+pub async fn run(tool_name: String, args: Vec<String>) -> Result<()> {
+    match Workspace::try_new()? {
+        Some(workspace) => run_tool(workspace, tool_name, args).await,
+        None => Shims::new()?.execute_fallback(tool_name, args),
+    }
+}
+
+async fn run_tool(mut workspace: Workspace, tool_name: String, args: Vec<String>) -> Result<()> {
     let tool = workspace
         .config
         .tools

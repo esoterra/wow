@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::{config::Config, registry::Registry, shims::Shims};
-use anyhow::{bail, Result};
+use anyhow::Result;
 use std::env;
 
 pub struct Workspace {
@@ -12,38 +12,35 @@ pub struct Workspace {
 }
 
 impl Workspace {
-    pub fn new() -> Result<Self> {
-        let (path, config_path) = find_paths()?;
+    pub fn try_new() -> Result<Option<Self>> {
+        let Some((path, config_path)) = find_paths()? else {
+            return Ok(None);
+        };
         let config = Config::parse_file(config_path)?;
         let registry = Registry::new(&config.registry)?;
         let shims = Shims::new()?;
-        Ok(Self {
+        Ok(Some(Self {
             path,
             config,
             registry,
             shims,
-        })
+        }))
     }
 }
 
 /// Returns (workspace, config) paths
-fn find_paths() -> Result<(PathBuf, PathBuf)> {
+fn find_paths() -> Result<Option<(PathBuf, PathBuf)>> {
     let cwd = env::current_dir()?;
-    let mut next = cwd.as_path();
+    let mut current = Some(cwd.as_path());
 
-    let config_path = next.join("wow.kdl");
-    if config_path.exists() {
-        return Ok((next.to_owned(), config_path));
-    }
-
-    while let Some(parent) = next.parent() {
-        next = parent;
-
-        let config_path = next.join("wow.kdl");
-        if config_path.exists() {
-            return Ok((next.to_owned(), config_path));
+    while let Some(dir) = current {
+        let config = dir.join("wow.kdl");
+        if config.is_file() {
+            return Ok(Some((dir.to_owned(), config)));
         }
+
+        current = dir.parent();
     }
 
-    bail!("Could not find `wow.kdl` config in this directory or a parent.")
+    Ok(None)
 }

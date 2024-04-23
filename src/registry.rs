@@ -4,7 +4,7 @@ use warg_client::{
     storage::{ContentStorage, RegistryStorage},
     FileSystemClient,
 };
-use warg_protocol::{registry::PackageName, Version, VersionReq};
+use warg_protocol::registry::PackageName;
 
 use crate::config::Tool;
 
@@ -19,47 +19,25 @@ impl Registry {
             ..Default::default()
         };
 
-        let client = match FileSystemClient::try_new_with_config(url.into(), &config, None)? {
-            warg_client::StorageLockResult::Acquired(client) => Ok(client),
-            warg_client::StorageLockResult::NotAcquired(path) => {
-                println!(
-                    "blocking on lock for directory `{path}`...",
-                    path = path.display()
-                );
-
-                FileSystemClient::new_with_config(Some(url), &config, None)
-            }
-        }?;
+        let client = FileSystemClient::new_with_config(Some(url), &config, None)?;
 
         Ok(Self { client })
     }
 
     pub async fn ensure_downloaded(&mut self, tool: &Tool) -> Result<()> {
         let package = PackageName::new(tool.package.clone())?;
-        let requirement = match &tool.version {
-            Some(version) => VersionReq::parse(&format!("={}", version))?,
-            None => VersionReq::STAR,
-        };
+        let requirement = tool.version_req()?;
+
+        println!("Downloading package '{}' version {}", package, requirement);
+        self.client.upsert([&package]).await?;
         self.client.download(&package, &requirement).await?;
         Ok(())
     }
 
     pub async fn component_path(&mut self, tool: &Tool) -> Result<PathBuf> {
         let package = PackageName::new(tool.package.clone())?;
-        match &tool.version {
-            Some(version) => {
-                let version = Version::parse(version)?;
-                self.exact_component_path(package, version).await
-            }
-            None => self.latest_component_path(package).await,
-        }
-    }
+        let requirement = tool.version_req()?;
 
-    async fn exact_component_path(
-        &mut self,
-        package: PackageName,
-        version: Version,
-    ) -> Result<PathBuf> {
         let package_info = self
             .client
             .registry()
@@ -69,7 +47,7 @@ impl Registry {
             .context("Package not found.")?;
         let release = package_info
             .state
-            .release(&version)
+            .find_latest_release(&requirement)
             .context("Version not found.")?;
         let content = match &release.state {
             warg_protocol::package::ReleaseState::Released { content } => content,
@@ -82,10 +60,5 @@ impl Registry {
             .content_location(&content)
             .context("Tool binary not found.")?;
         Ok(path)
-    }
-
-    async fn latest_component_path(&mut self, package: PackageName) -> Result<PathBuf> {
-        _ = package;
-        bail!("TODO: support tools without versions")
     }
 }
