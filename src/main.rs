@@ -35,9 +35,9 @@ async fn main() -> Result<()> {
     let args = Args::parse();
     match args.command {
         Command::Init => exec_init().await.context("Initializing workspace")?,
-        Command::Run(run) => run::run(run.tool_name, run.args)
+        Command::Run(run) => run::run(&run.tool_name, run.args)
             .await
-            .context("Running a tool")?,
+            .with_context(|| format!("Running tool '{}'", &run.tool_name))?,
     }
 
     Ok(())

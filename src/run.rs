@@ -10,18 +10,18 @@ use wasmtime_wasi::command::{Command, add_to_linker as add_command_to_linker};
 
 use crate::{shims::Shims, workspace::Workspace};
 
-pub async fn run(tool_name: String, args: Vec<String>) -> Result<()> {
+pub async fn run(tool_name: &str, args: Vec<String>) -> Result<()> {
     match Workspace::try_new()? {
         Some(workspace) => run_tool(workspace, tool_name, args).await,
         None => Shims::new()?.execute_fallback(tool_name, args),
     }
 }
 
-async fn run_tool(mut workspace: Workspace, tool_name: String, args: Vec<String>) -> Result<()> {
+async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) -> Result<()> {
     let tool = workspace
         .config
         .tools
-        .get(&tool_name)
+        .get(tool_name)
         .context("No such tool")?;
     let component_path = workspace.registry.component_path(tool).await?;
     let component_bytes = fs::read(component_path)?;
@@ -30,7 +30,7 @@ async fn run_tool(mut workspace: Workspace, tool_name: String, args: Vec<String>
     config.wasm_component_model(true);
     config.async_support(true);
 
-    let args = [vec![tool_name.clone()], args].concat();
+    let args = [vec![tool_name.to_owned()], args].concat();
 
     let wow_store = WowStore {
         table: ResourceTable::new(),

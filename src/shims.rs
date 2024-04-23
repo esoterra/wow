@@ -62,7 +62,7 @@ impl Shims {
 
     /// This function does not return if it succeeds
     /// Execution is handed off to the new process
-    pub fn execute_fallback(&self, tool_name: String, args: Vec<String>) -> Result<()> {
+    pub fn execute_fallback(&self, tool_name: &str, args: Vec<String>) -> Result<()> {
         let fallback = self.find_fallback(&tool_name)?;
         let error = Command::new(fallback)
             .args(args)

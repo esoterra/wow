@@ -1,3 +1,4 @@
 registry "wow.wa.dev"
 
 tool "cowsay" package="wow:cowsay"
+tool "cat2" package="wow:kitty"

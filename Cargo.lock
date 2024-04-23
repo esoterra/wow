@@ -1425,6 +1425,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "kitty"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "wit-bindgen-rt",
+]
+
+[[package]]
 name = "knuffel"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

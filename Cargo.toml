@@ -17,6 +17,4 @@ wasmtime = "19.0.2"
 wasmtime-wasi = "19.0.2"
 
 [workspace]
-members = [
-    "examples/cowsay"
-]
+members = ["examples/cowsay", "examples/kitty"]
