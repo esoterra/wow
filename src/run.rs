@@ -27,6 +27,7 @@ async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) 
     let component_bytes = fs::read(component_path)?;
 
     let mut config = Config::new();
+    config.cache_config_load_default()?;
     config.wasm_component_model(true);
     config.async_support(true);
 
