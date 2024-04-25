@@ -2,6 +2,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 
 use anyhow::{Context, Result};
 use serde::Deserialize;
+use warg_protocol::registry::PackageName;
 use warg_protocol::VersionReq;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -12,7 +13,7 @@ pub struct Config {
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Tool {
-    pub package: String,
+    pub package: PackageName,
     pub version: Option<String>,
 }
 
@@ -47,7 +48,7 @@ mod tests {
         expected_tools.insert(
             "wasm-tools".into(),
             Tool {
-                package: "ba:wasm-tools".into(),
+                package: PackageName::new("ba:wasm-tools".to_string()).unwrap(),
                 version: Some("0.2.1".into()),
             },
         );

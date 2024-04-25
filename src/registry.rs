@@ -4,7 +4,6 @@ use warg_client::{
     storage::{ContentStorage, RegistryStorage},
     FileSystemClient,
 };
-use warg_protocol::registry::PackageName;
 
 use crate::config::Tool;
 
@@ -25,23 +24,23 @@ impl Registry {
     }
 
     pub async fn ensure_downloaded(&mut self, tool: &Tool) -> Result<()> {
-        let package = PackageName::new(tool.package.clone())?;
+        let package = &tool.package;
         let requirement = tool.version_req()?;
 
         println!("Downloading package '{}' version {}", package, requirement);
-        self.client.upsert([&package]).await?;
-        self.client.download(&package, &requirement).await?;
+        self.client.upsert([package]).await?;
+        self.client.download(package, &requirement).await?;
         Ok(())
     }
 
     pub async fn component_path(&mut self, tool: &Tool) -> Result<PathBuf> {
-        let package = PackageName::new(tool.package.clone())?;
+        let package = &tool.package;
         let requirement = tool.version_req()?;
 
         let package_info = self
             .client
             .registry()
-            .load_package(&None, &package)
+            .load_package(&None, package)
             .await
             .context("Package not found.")?
             .context("Package not found.")?;
