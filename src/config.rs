@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use anyhow::{Context, Result};
-use serde::{Deserialize};
+use serde::Deserialize;
 use warg_protocol::VersionReq;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -52,12 +52,11 @@ mod tests {
             },
         );
 
-        let file_name = "wow.toml";
         let text = r#"
         registry = "wow.wa.dev"
 
         [tools]
-        wasm-tools = { package = "ba:wasm-tools", version = "0.2.1 }"
+        wasm-tools = { package = "ba:wasm-tools", version = "0.2.1" }
         "#;
         let config = Config::parse(text).unwrap();
 

@@ -3,10 +3,11 @@ use std::fs;
 use anyhow::{Context, Result};
 use cap_std::fs::Dir;
 use wasmtime::{
-    component::{Component, Linker}, Config, Engine, Store
+    component::{Component, Linker},
+    Config, Engine, Store,
 };
+use wasmtime_wasi::command::{add_to_linker as add_command_to_linker, Command};
 use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
-use wasmtime_wasi::command::{Command, add_to_linker as add_command_to_linker};
 
 use crate::{shims::Shims, workspace::Workspace};
 
@@ -35,7 +36,7 @@ async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) 
 
     let wow_store = WowStore {
         table: ResourceTable::new(),
-        ctx: build_wasi_ctx(&workspace, args.as_slice())?
+        ctx: build_wasi_ctx(&workspace, args.as_slice())?,
     };
 
     let engine = Engine::new(&config).unwrap();
@@ -46,7 +47,12 @@ async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) 
     let component = Component::new(&engine, &component_bytes).unwrap();
     let (command, _instance) = Command::instantiate_async(&mut store, &component, &linker).await?;
 
-    command.wasi_cli_run().call_run(&mut store).await?.ok().context("Failed to execute tool")?;
+    command
+        .wasi_cli_run()
+        .call_run(&mut store)
+        .await?
+        .ok()
+        .context("Failed to execute tool")?;
 
     Ok(())
 }

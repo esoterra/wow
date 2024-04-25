@@ -64,9 +64,7 @@ impl Shims {
     /// Execution is handed off to the new process
     pub fn execute_fallback(&self, tool_name: &str, args: Vec<String>) -> Result<()> {
         let fallback = self.find_fallback(tool_name)?;
-        let error = Command::new(fallback)
-            .args(args)
-            .exec();
+        let error = Command::new(fallback).args(args).exec();
         Err(error.into())
     }
 
