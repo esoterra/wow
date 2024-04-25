@@ -57,7 +57,7 @@ impl Registry {
         let path = self
             .client
             .content()
-            .content_location(&content)
+            .content_location(content)
             .context("Tool binary not found.")?;
         Ok(path)
     }

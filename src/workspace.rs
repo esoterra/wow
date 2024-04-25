@@ -34,7 +34,7 @@ fn find_paths() -> Result<Option<(PathBuf, PathBuf)>> {
     let mut current = Some(cwd.as_path());
 
     while let Some(dir) = current {
-        let config = dir.join("wow.kdl");
+        let config = dir.join("wow.toml");
         if config.is_file() {
             return Ok(Some((dir.to_owned(), config)));
         }

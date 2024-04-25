@@ -63,7 +63,7 @@ impl Shims {
     /// This function does not return if it succeeds
     /// Execution is handed off to the new process
     pub fn execute_fallback(&self, tool_name: &str, args: Vec<String>) -> Result<()> {
-        let fallback = self.find_fallback(&tool_name)?;
+        let fallback = self.find_fallback(tool_name)?;
         let error = Command::new(fallback)
             .args(args)
             .exec();
@@ -80,8 +80,8 @@ impl Shims {
         let which_stdout =
             String::from_utf8(which_stdout).context("Decoding 'which` output as UTF-8")?;
         which_stdout
-            .split("\n")
-            .map(|p| PathBuf::from(p))
+            .split('\n')
+            .map(PathBuf::from)
             .filter(|p| !p.starts_with(&self.shim_dir))
             .nth(0)
             .context("Could not find fallback")

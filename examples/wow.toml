@@ -1,0 +1,5 @@
+registry = "wow.wa.dev"
+
+[tools]
+cowsay = { package = "wow:cowsay" }
+cat2 = { package = "wow:kitty" }
