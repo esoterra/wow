@@ -1,9 +1,7 @@
 use anyhow::{bail, Context, Result};
 use std::path::PathBuf;
-use warg_client::{
-    storage::{ContentStorage, RegistryStorage},
-    FileSystemClient,
-};
+use warg_client::{FileSystemClient, RegistryUrl};
+use warg_credentials::keyring::get_auth_token;
 
 use crate::config::Tool;
 
@@ -12,13 +10,30 @@ pub struct Registry {
 }
 
 impl Registry {
-    pub fn new(url: &str) -> Result<Self> {
-        let config = warg_client::Config {
-            home_url: Some(url.into()),
-            ..Default::default()
-        };
+    pub fn new(url: Option<&str>) -> Result<Self> {
+        let client = if let Some(url) = url {
+            let config = warg_client::Config {
+                home_url: Some(url.into()),
+                ..Default::default()
+            };
 
-        let client = FileSystemClient::new_with_config(Some(url), &config, None)?;
+            FileSystemClient::new_with_config(Some(url), &config, None)?
+        } else if let Some(config) = warg_client::Config::from_default_file()? {
+            let auth = if config.keyring_auth {
+                if let Some(reg_url) = &config.home_url {
+                    get_auth_token(&RegistryUrl::new(reg_url)?)?
+                } else if let Some(url) = config.home_url.as_ref() {
+                    get_auth_token(&RegistryUrl::new(url)?)?
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+            FileSystemClient::new_with_config(None, &config, auth)?
+        } else {
+            bail!("registry configuration not found");
+        };
 
         Ok(Self { client })
     }
@@ -28,36 +43,17 @@ impl Registry {
         let requirement = tool.version_req()?;
 
         println!("Downloading package '{}' version {}", package, requirement);
-        self.client.upsert([package]).await?;
-        self.client.download(package, &requirement).await?;
+        self.component_path(tool).await?;
         Ok(())
     }
 
     pub async fn component_path(&mut self, tool: &Tool) -> Result<PathBuf> {
-        let package = &tool.package;
-        let requirement = tool.version_req()?;
-
-        let package_info = self
+        Ok(self
             .client
-            .registry()
-            .load_package(&None, package)
+            .download(&tool.package, &tool.version_req()?)
             .await
-            .context("Package not found.")?
-            .context("Package not found.")?;
-        let release = package_info
-            .state
-            .find_latest_release(&requirement)
-            .context("Version not found.")?;
-        let content = match &release.state {
-            warg_protocol::package::ReleaseState::Released { content } => content,
-            warg_protocol::package::ReleaseState::Yanked { .. } => bail!("Package was yanked."),
-        };
-
-        let path = self
-            .client
-            .content()
-            .content_location(content)
-            .context("Tool binary not found.")?;
-        Ok(path)
+            .context("Failed to download.")?
+            .context("Package or version was not found.")?
+            .path)
     }
 }

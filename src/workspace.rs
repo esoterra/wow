@@ -17,7 +17,7 @@ impl Workspace {
             return Ok(None);
         };
         let config = Config::parse_file(config_path)?;
-        let registry = Registry::new(&config.registry)?;
+        let registry = Registry::new(config.registry.as_deref())?;
         let shims = Shims::new()?;
         Ok(Some(Self {
             path,

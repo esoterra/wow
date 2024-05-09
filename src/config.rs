@@ -7,7 +7,7 @@ use warg_protocol::VersionReq;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Config {
-    pub registry: String,
+    pub registry: Option<String>,
     pub tools: HashMap<String, Tool>,
 }
 

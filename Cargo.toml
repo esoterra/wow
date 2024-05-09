@@ -10,8 +10,9 @@ clap = { version = "4.5.4", features = ["derive"] }
 toml = "0.8.12"
 serde = "1.0.198"
 tokio = "1.37.0"
-warg-client = "0.4.1"
-warg-protocol = "0.4.1"
+warg-client = "0.5.0"
+warg-protocol = "0.5.0"
+warg-credentials = "0.5.0"
 wasmtime = "19.0.2"
 wasmtime-wasi = "19.0.2"
 
