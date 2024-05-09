@@ -1,18 +1,17 @@
 use std::{collections::HashMap, fs, path::PathBuf};
 
-use anyhow::{bail, Context, Result};
-use knuffel;
-use warg_protocol::VersionReq;
+use anyhow::{Context, Result};
+use warg_protocol::{registry::PackageName, VersionReq};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Config {
-    pub registry: String,
+    pub registry: Option<String>,
     pub tools: HashMap<String, Tool>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Tool {
-    pub package: String,
+    pub package: PackageName,
     pub version: Option<String>,
 }
 
@@ -45,16 +44,13 @@ impl Config {
                 }
                 KdlConfigItem::Tool(item) => {
                     let tool = Tool {
-                        package: item.package,
+                        package: PackageName::new(item.package).context("Invalid package name")?,
                         version: item.version,
                     };
                     tools.insert(item.name, tool);
                 }
             }
         }
-        let Some(registry) = registry else {
-            bail!("Registry not defined")
-        };
         Ok(Self { registry, tools })
     }
 }
