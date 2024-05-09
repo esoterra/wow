@@ -11,9 +11,8 @@ cap-std = "3.0.0"
 clap = { version = "4.5.4", features = ["derive"] }
 kdl = "4.6.0"
 tokio = "1.37.0"
-warg-client = "0.5.0"
-warg-credentials = "0.5.0"
-warg-protocol = "0.5.0"
+warg-client = "0.6.0"
+warg-protocol = "0.6.0"
 wasmtime = "19.0.2"
 wasmtime-wasi = "19.0.2"
 

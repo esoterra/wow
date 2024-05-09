@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use std::path::PathBuf;
-use warg_client::{FileSystemClient, RegistryUrl};
-use warg_credentials::keyring::get_auth_token;
+use warg_client::FileSystemClient;
 
 use crate::config::Tool;
 
@@ -11,23 +10,17 @@ pub struct Registry {
 
 impl Registry {
     pub fn new(url: Option<&str>) -> Result<Self> {
-        let config = warg_client::Config::from_default_file()?.unwrap_or_default();
-        let url = url.or(config.home_url.as_deref());
-        let auth_token = if config.keyring_auth && url.is_some() {
-            get_auth_token(&RegistryUrl::new(url.unwrap())?)?
-        } else {
-            None
-        };
         Ok(Self {
-            client: FileSystemClient::new_with_config(url, &config, auth_token)?,
+            client: FileSystemClient::new_with_default_config(url)?,
         })
     }
 
     pub async fn ensure_downloaded(&mut self, tool: &Tool) -> Result<()> {
-        let package = &tool.package;
-        let requirement = tool.version_req()?;
-
-        println!("Downloading package '{}' version {}", package, requirement);
+        println!(
+            "Downloading package `{package}` version requirement `{version}`",
+            package = &tool.package,
+            version = tool.version_req()?
+        );
         self.component_path(tool).await?;
         Ok(())
     }
