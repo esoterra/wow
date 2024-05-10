@@ -17,4 +17,4 @@ wasmtime = "20"
 wasmtime-wasi = "20"
 
 [workspace]
-members = ["examples/cowsay", "examples/kitty", "demo/claw", "demo/template"]
+members = ["examples/cowsay", "examples/kitty"]
