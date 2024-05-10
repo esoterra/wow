@@ -2,10 +2,11 @@ use std::fs;
 
 use anyhow::{Context, Result};
 use wasmtime::{
-    component::{Component, Linker}, Config, Engine, Store
+    component::{Component, Linker},
+    Config, Engine, Store,
 };
-use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 use wasmtime_wasi::bindings::Command;
+use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 
 use crate::{shims::Shims, workspace::Workspace};
 
@@ -34,7 +35,7 @@ async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) 
 
     let wow_store = WowStore {
         table: ResourceTable::new(),
-        ctx: build_wasi_ctx(&workspace, args.as_slice())?
+        ctx: build_wasi_ctx(&workspace, args.as_slice())?,
     };
 
     let engine = Engine::new(&config).unwrap();
@@ -46,7 +47,12 @@ async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) 
     let pre = linker.instantiate_pre(&component)?;
     let (command, _instance) = Command::instantiate_pre(&mut store, &pre).await?;
 
-    command.wasi_cli_run().call_run(&mut store).await?.ok().context("Failed to execute tool")?;
+    command
+        .wasi_cli_run()
+        .call_run(&mut store)
+        .await?
+        .ok()
+        .context("Failed to execute tool")?;
 
     Ok(())
 }
@@ -72,12 +78,7 @@ fn build_wasi_ctx(workspace: &Workspace, args: &[String]) -> Result<WasiCtx> {
     builder.inherit_stdin().inherit_stdout().inherit_stderr();
     builder.inherit_env();
     builder.args(args);
-    builder.preopened_dir(
-        &workspace.path,
-        "/",
-        DirPerms::all(),
-        FilePerms::all(),
-    )?;
+    builder.preopened_dir(&workspace.path, "/", DirPerms::all(), FilePerms::all())?;
 
     Ok(builder.build())
 }

@@ -11,8 +11,8 @@ cap-std = "3.0.0"
 clap = { version = "4.5.4", features = ["derive"] }
 knuffel = "3.2.0"
 tokio = "1.37.0"
-warg-client = "0.4.1"
-warg-protocol = "0.4.1"
+warg-client = "0.6.0"
+warg-protocol = "0.6.0"
 wasmtime = "20"
 wasmtime-wasi = "20"
 
