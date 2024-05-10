@@ -7,6 +7,7 @@ The workspace manager for development environments.
 ```bash
 cargo install --git https://github.com/esoterra/wow wow
 
+vim ~/.bashrc # add `$HOME/.wow/bin` to path
 ```
 
 ## Initialized a workspace
@@ -25,8 +26,6 @@ registry "ba.wa.dev"
 tool "wasm-tools" package="ba:wasm-tools" version="1.2"
 
 $ wow init
-
-$ vim ~/.bashrc # add `$HOME/.wow/shims` to path
 ```
 
 In this scenario initializing
