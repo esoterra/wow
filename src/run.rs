@@ -1,12 +1,11 @@
 use std::fs;
 
 use anyhow::{Context, Result};
-use cap_std::fs::Dir;
 use wasmtime::{
     component::{Component, Linker}, Config, Engine, Store
 };
 use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
-use wasmtime_wasi::command::{Command, add_to_linker as add_command_to_linker};
+use wasmtime_wasi::bindings::Command;
 
 use crate::{shims::Shims, workspace::Workspace};
 
@@ -40,11 +39,12 @@ async fn run_tool(mut workspace: Workspace, tool_name: &str, args: Vec<String>) 
 
     let engine = Engine::new(&config).unwrap();
     let mut linker: Linker<WowStore> = Linker::new(&engine);
-    add_command_to_linker(&mut linker)?;
+    wasmtime_wasi::add_to_linker_async(&mut linker)?;
     let mut store: Store<WowStore> = Store::new(&engine, wow_store);
 
     let component = Component::new(&engine, &component_bytes).unwrap();
-    let (command, _instance) = Command::instantiate_async(&mut store, &component, &linker).await?;
+    let pre = linker.instantiate_pre(&component)?;
+    let (command, _instance) = Command::instantiate_pre(&mut store, &pre).await?;
 
     command.wasi_cli_run().call_run(&mut store).await?.ok().context("Failed to execute tool")?;
 
@@ -67,19 +67,17 @@ impl WasiView for WowStore {
 }
 
 fn build_wasi_ctx(workspace: &Workspace, args: &[String]) -> Result<WasiCtx> {
-    let root = std::fs::File::open(&workspace.path)?;
-
     let mut builder = WasiCtxBuilder::new();
 
     builder.inherit_stdin().inherit_stdout().inherit_stderr();
     builder.inherit_env();
     builder.args(args);
     builder.preopened_dir(
-        Dir::from_std_file(root),
+        &workspace.path,
+        "/",
         DirPerms::all(),
         FilePerms::all(),
-        "/",
-    );
+    )?;
 
     Ok(builder.build())
 }

@@ -13,8 +13,8 @@ knuffel = "3.2.0"
 tokio = "1.37.0"
 warg-client = "0.4.1"
 warg-protocol = "0.4.1"
-wasmtime = "19.0.2"
-wasmtime-wasi = "19.0.2"
+wasmtime = "20"
+wasmtime-wasi = "20"
 
 [workspace]
-members = ["examples/cowsay", "examples/kitty"]
+members = ["examples/cowsay", "examples/kitty", "demo/claw", "demo/template"]
