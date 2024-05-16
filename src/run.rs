@@ -11,7 +11,7 @@ use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder,
 use crate::{shims::Shims, workspace::Workspace};
 
 pub async fn run(tool_name: &str, args: Vec<String>) -> Result<()> {
-    match Workspace::try_new()? {
+    match Workspace::try_new().await? {
         Some(workspace) => run_tool(workspace, tool_name, args).await,
         None => Shims::new()?.execute_fallback(tool_name, args),
     }

@@ -9,9 +9,9 @@ pub struct Registry {
 }
 
 impl Registry {
-    pub fn new(url: Option<&str>) -> Result<Self> {
+    pub async fn new(url: Option<&str>) -> Result<Self> {
         Ok(Self {
-            client: FileSystemClient::new_with_default_config(url)?,
+            client: FileSystemClient::new_with_default_config(url).await?,
         })
     }
 

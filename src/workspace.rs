@@ -12,12 +12,12 @@ pub struct Workspace {
 }
 
 impl Workspace {
-    pub fn try_new() -> Result<Option<Self>> {
+    pub async fn try_new() -> Result<Option<Self>> {
         let Some((path, config_path)) = find_paths()? else {
             return Ok(None);
         };
         let config = Config::parse_file(config_path)?;
-        let registry = Registry::new(config.registry.as_deref())?;
+        let registry = Registry::new(config.registry.as_deref()).await?;
         let shims = Shims::new()?;
         Ok(Some(Self {
             path,
