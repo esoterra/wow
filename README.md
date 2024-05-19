@@ -1,6 +1,14 @@
-# Workspaces on Wasm (wow)
+<div align="center">
+  <h1>Workspaces on Wasm (<code>wow</code>)</h1>
 
-The workspace manager for development environments.
+  <p>
+    <strong>The sandboxed workspace manager for development environments</strong>
+  </p>
+
+  <p>
+    <a href="https://techforpalestine.org/learn-more"><img src="https://badge.techforpalestine.org/default" alt="build status" /></a>
+  </p>
+</div>
 
 ## Installing `wow`
 
