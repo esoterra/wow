@@ -1,8 +1,12 @@
 #[allow(warnings)]
 mod bindings;
 
-use std::{env::args, fs::File, io::{Read, Write}, path::PathBuf};
-
+use std::{
+    env::args,
+    fs::File,
+    io::{Read, Write},
+    path::PathBuf,
+};
 
 fn main() -> anyhow::Result<()> {
     // Skip the first argument (binary name)

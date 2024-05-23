@@ -44,9 +44,9 @@ async fn main() -> Result<()> {
 }
 
 async fn exec_init() -> Result<()> {
-    let mut workspace = Workspace::try_new()?.context("Couldn't find workspace.")?;
-
-    // workspace.registry.update().await?;
+    let mut workspace = Workspace::try_new()
+        .await?
+        .context("Couldn't find workspace.")?;
 
     for (_, tool) in workspace.config.tools.iter() {
         workspace

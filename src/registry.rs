@@ -1,10 +1,6 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use std::path::PathBuf;
-use warg_client::{
-    storage::{ContentStorage, RegistryStorage},
-    FileSystemClient,
-};
-use warg_protocol::registry::PackageName;
+use warg_client::FileSystemClient;
 
 use crate::config::Tool;
 
@@ -13,52 +9,29 @@ pub struct Registry {
 }
 
 impl Registry {
-    pub fn new(url: &str) -> Result<Self> {
-        let config = warg_client::Config {
-            home_url: Some(url.into()),
-            ..Default::default()
-        };
-
-        let client = FileSystemClient::new_with_config(Some(url), &config, None)?;
-
-        Ok(Self { client })
+    pub async fn new(url: Option<&str>) -> Result<Self> {
+        Ok(Self {
+            client: FileSystemClient::new_with_default_config(url).await?,
+        })
     }
 
     pub async fn ensure_downloaded(&mut self, tool: &Tool) -> Result<()> {
-        let package = PackageName::new(tool.package.clone())?;
-        let requirement = tool.version_req()?;
-
-        println!("Downloading package '{}' version {}", package, requirement);
-        self.client.upsert([&package]).await?;
-        self.client.download(&package, &requirement).await?;
+        println!(
+            "Downloading package `{package}` version requirement `{version}`",
+            package = &tool.package,
+            version = tool.version_req()?
+        );
+        self.component_path(tool).await?;
         Ok(())
     }
 
     pub async fn component_path(&mut self, tool: &Tool) -> Result<PathBuf> {
-        let package = PackageName::new(tool.package.clone())?;
-        let requirement = tool.version_req()?;
-
-        let package_info = self
+        Ok(self
             .client
-            .registry()
-            .load_package(&None, &package)
+            .download(&tool.package, &tool.version_req()?)
             .await
-            .context("Package not found.")?
-            .context("Package not found.")?;
-        let release = package_info
-            .state
-            .find_latest_release(&requirement)
-            .context("Version not found.")?;
-        let content = match &release.state {
-            warg_protocol::package::ReleaseState::Released { content } => content,
-            warg_protocol::package::ReleaseState::Yanked { .. } => bail!("Package was yanked."),
-        };
-
-        let path = self
-            .client
-            .content()
-            .content_location(&content)
-            .context("Tool binary not found.")?;
-        Ok(path)
+            .context("Failed to download.")?
+            .context("Package or version was not found.")?
+            .path)
     }
 }
