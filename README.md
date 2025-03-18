@@ -21,7 +21,7 @@ vim ~/.bashrc # add `$HOME/.wow/bin` to path
 ## Initialized a workspace
 
 Running `wow init` will set up the current workspace.
-The current directory must contain a `wow.toml` file.
+The current directory must contain a `wow.kdl` file.
 
 ```bash
 $ git clone https://github.com/foo/bar
